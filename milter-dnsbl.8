@@ -1,0 +1,97 @@
+.TH milter-dnsbl 8 "26 July 2007"
+.SH NAME
+milter-dnsbl - A milter that replaces FEATURE(dnsbl)
+.SH SYNOPSIS
+.B milter-dnsbl
+.RB [ -h ]
+.RB [ -d ]
+.RB < -u
+.IR user >
+.RB < -s
+.IR socket >
+.RB [ -W
+.IR domain ]
+.RB [ -w
+.IR list ]
+.RB < -l
+.IR DNSBL >
+.SH DESCRIPTION
+.PP
+Sendmail includes a facility for plugging in custom mail filters,
+called milters.
+It's documented here: http://www.milter.org/milter_api/
+.PP
+This milter's purpose is to be used instead of FEATURE(dnsbl).
+.PP
+For this milter to run properly lwresd(8) must be installed.
+.SH OPTIONS
+.PP
+.TP
+.B -h
+Prints milter usage
+.TP
+.B -d
+Run milter as daemon
+.TP
+.B -u
+Run milter as the specified user
+.TP
+.B -s
+All milters take a standardized socket argument, which specifies how they
+communicate with sendmail.
+This will look something like "unix:/var/run/milter-dnsbl.sock" for a
+unix-domain socket, or "inet:2525@localhost" for an internet-domain socket.
+The same string gets used in the INPUT_MAIL_FILTER macro in sendmail.mc.
+.TP
+.B -W
+Whitelist hosts under this domain.  This can be a hostname, a domain name or
+part of a domain name.  For example -W ple.com matches both example.com and
+exam.ple.com, while -W .ple.com matches only exam.ple.com.
+.TP
+.B -w
+Whitelist IP addresses published in this DNS list
+.TP
+.B -l
+Blacklist IP addresses published in this DNS list
+.PP
+Multiple -W, -w and -l options may be specified.
+.SH INSTALLATION
+.PP
+This is very abbreviated, intended mainly as a reminder for those
+who have worked with milters before.
+If it's your first time, you should look on the web for more thorough
+documentation.
+.IP 0)
+Make sure you have lwresd(8) installed and running.
+.IP 1)
+Make sure your sendmail is compiled with the MILTER option.
+You can use this command to check:
+.nf
+    sendmail -d0.1 -bt < /dev/null | grep MILTER
+.fi
+If you don't see MILTER in the compilation options, you will have
+to re-build sendmail.
+.IP 2)
+Build and install the milter-dnsbl executable, by doing a 'make install'.
+.IP 3)
+Edit your sendmail.mc and add a mail filter macro, for example:
+.nf
+    INPUT_MAIL_FILTER(`milter-dnsbl',`S=unix:/var/run/milter-dnsbl.sock, F=T, T=S:4m;R:4m')
+.fi
+Rebuild and install sendmail.cf.
+.IP 4)
+Run milter-dnsbl, with the same socket argument you used in sendmail.mc:
+.nf
+    # milter-dnsbl -u nobody -s unix:/var/run/milter-dnsbl.sock -l sbl-xbl.spamhaus.org
+.fi
+.IP 5)
+Stop and re-start sendmail.
+.IP 6)
+Look in /var/log/maillog for messages from milter-dnsbl.
+.SH BUGS
+This milter is tested only on an Ubuntu 6.06 i386 server.
+.SH AUTHOR
+Copyright (c) 2007 Yiorgos Adamopoulos <adamo@dblab.ece.ntua.gr>.
+All rights reserved.
+.PP
+This manpage is based on sample_milter(8) by Jef Poskanzer.
