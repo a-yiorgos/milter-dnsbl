@@ -3,6 +3,8 @@ milter-dnsbl
 
 A sendmail milter that uses blacklists
 
+http://blog.postmaster.gr/2007/07/26/milter-dnsbl/
+
 Sendmail administrators using FEATURE(dnsbl) may have noticed that ruleset
 check_rcpt is executed after all connected milters have executed the
 corresponding xxfi_*() routines.
